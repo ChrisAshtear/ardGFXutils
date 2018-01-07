@@ -66,6 +66,7 @@
 *************************************************************************/
 
 #include <stdio.h>
+#include "types.h"
 /*************************************************************************
 *                           INTERNAL FUNCTIONS                           *
 *************************************************************************/
@@ -265,7 +266,7 @@ int RLE_Compress( unsigned char *in, unsigned char *out,
 *  insize  - Number of input bytes.
 *************************************************************************/
 
-void RLE_Uncompress( unsigned char *in, unsigned char *out,
+int RLE_Uncompress( unsigned char *in, RLE_data *out,
     unsigned int insize )
 {
     unsigned char marker, symbol;
@@ -274,18 +275,21 @@ void RLE_Uncompress( unsigned char *in, unsigned char *out,
     /* Do we have anything to uncompress? */
     if( insize < 1 )
     {
-        return;
+        return 0;
     }
 
     /* Get marker symbol from input stream */
     inpos = 0;
     marker = in[ inpos ++ ];
 
+	//cout <<"\nBeginning Decompression\n";
     /* Main decompression loop */
     outpos = 0;
+	int curPos = 0;
     do
     {
         symbol = in[ inpos ++ ];
+		//cout << "symbol: " << symbol;
         if( symbol == marker )
         {
             /* We had a marker byte */
@@ -294,30 +298,28 @@ void RLE_Uncompress( unsigned char *in, unsigned char *out,
             {
                 /* Counts 0, 1 and 2 are used for marker byte repetition
                    only */
-                for( i = 0; i <= count; ++ i )
-                {
-                    out[ outpos ++ ] = marker;
-                }
+				curPos= outpos++;
+				out[ curPos ].colorIdx = marker;
+				out[ curPos ].rLength = count;
             }
             else
             {
-                if( count & 0x80 )
-                {
-                    count = ((count & 0x7f) << 8) + in[ inpos ++ ];
-                }
-                symbol = in[ inpos ++ ];
-                for( i = 0; i <= count; ++ i )
-                {
-                    out[ outpos ++ ] = symbol;
-                }
+                curPos = outpos++;
+				
+				symbol = in[inpos++];
+				//cout<< "repeating symbol:" << symbol;
+				out[ curPos ].colorIdx = symbol;
+				out[ curPos ].rLength = count;
             }
         }
         else
         {
             /* No marker, plain copy */
-            out[ outpos ++ ] = symbol;
+			curPos = outpos++;
+            out[ curPos ].colorIdx = symbol;
+			out[ curPos ].rLength = 1;
         }
     }
     while( inpos < insize );
+	return outpos;
 }
-

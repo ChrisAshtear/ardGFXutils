@@ -1,1 +1,1 @@
-./Debug/main.cpp.o ./Debug/rle.c.o   
+./Debug/rle.cpp.o ./Debug/bmp.cpp.o ./Debug/main.cpp.o   

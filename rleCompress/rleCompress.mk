@@ -52,7 +52,7 @@ LibPath                := $(LibraryPathSwitch).
 AR       := C:/TDM-GCC-64/bin/ar.exe rcu
 CXX      := C:/TDM-GCC-64/bin/g++.exe
 CC       := C:/TDM-GCC-64/bin/gcc.exe
-CXXFLAGS :=  -g -O0 -Wall $(Preprocessors)
+CXXFLAGS :=  -g -O0 -std=c++11 -Wall $(Preprocessors)
 CFLAGS   :=  -g -O0 -Wall $(Preprocessors)
 ASFLAGS  := 
 AS       := C:/TDM-GCC-64/bin/as.exe
@@ -62,7 +62,7 @@ AS       := C:/TDM-GCC-64/bin/as.exe
 ## User defined environment variables
 ##
 CodeLiteDir:=C:\Program Files\CodeLite
-Objects0=$(IntermediateDirectory)/main.cpp$(ObjectSuffix) $(IntermediateDirectory)/rle.c$(ObjectSuffix) 
+Objects0=$(IntermediateDirectory)/rle.cpp$(ObjectSuffix) $(IntermediateDirectory)/bmp.cpp$(ObjectSuffix) $(IntermediateDirectory)/main.cpp$(ObjectSuffix) 
 
 
 
@@ -93,6 +93,22 @@ PreBuild:
 ##
 ## Objects
 ##
+$(IntermediateDirectory)/rle.cpp$(ObjectSuffix): rle.cpp $(IntermediateDirectory)/rle.cpp$(DependSuffix)
+	$(CXX) $(IncludePCH) $(SourceSwitch) "C:/Users/Tempest/Documents/cutil/rleCompress/rle.cpp" $(CXXFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/rle.cpp$(ObjectSuffix) $(IncludePath)
+$(IntermediateDirectory)/rle.cpp$(DependSuffix): rle.cpp
+	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) -MG -MP -MT$(IntermediateDirectory)/rle.cpp$(ObjectSuffix) -MF$(IntermediateDirectory)/rle.cpp$(DependSuffix) -MM rle.cpp
+
+$(IntermediateDirectory)/rle.cpp$(PreprocessSuffix): rle.cpp
+	$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/rle.cpp$(PreprocessSuffix) rle.cpp
+
+$(IntermediateDirectory)/bmp.cpp$(ObjectSuffix): bmp.cpp $(IntermediateDirectory)/bmp.cpp$(DependSuffix)
+	$(CXX) $(IncludePCH) $(SourceSwitch) "C:/Users/Tempest/Documents/cutil/rleCompress/bmp.cpp" $(CXXFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/bmp.cpp$(ObjectSuffix) $(IncludePath)
+$(IntermediateDirectory)/bmp.cpp$(DependSuffix): bmp.cpp
+	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) -MG -MP -MT$(IntermediateDirectory)/bmp.cpp$(ObjectSuffix) -MF$(IntermediateDirectory)/bmp.cpp$(DependSuffix) -MM bmp.cpp
+
+$(IntermediateDirectory)/bmp.cpp$(PreprocessSuffix): bmp.cpp
+	$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/bmp.cpp$(PreprocessSuffix) bmp.cpp
+
 $(IntermediateDirectory)/main.cpp$(ObjectSuffix): main.cpp $(IntermediateDirectory)/main.cpp$(DependSuffix)
 	$(CXX) $(IncludePCH) $(SourceSwitch) "C:/Users/Tempest/Documents/cutil/rleCompress/main.cpp" $(CXXFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/main.cpp$(ObjectSuffix) $(IncludePath)
 $(IntermediateDirectory)/main.cpp$(DependSuffix): main.cpp
@@ -100,14 +116,6 @@ $(IntermediateDirectory)/main.cpp$(DependSuffix): main.cpp
 
 $(IntermediateDirectory)/main.cpp$(PreprocessSuffix): main.cpp
 	$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/main.cpp$(PreprocessSuffix) main.cpp
-
-$(IntermediateDirectory)/rle.c$(ObjectSuffix): rle.c $(IntermediateDirectory)/rle.c$(DependSuffix)
-	$(CC) $(SourceSwitch) "C:/Users/Tempest/Documents/cutil/rleCompress/rle.c" $(CFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/rle.c$(ObjectSuffix) $(IncludePath)
-$(IntermediateDirectory)/rle.c$(DependSuffix): rle.c
-	@$(CC) $(CFLAGS) $(IncludePath) -MG -MP -MT$(IntermediateDirectory)/rle.c$(ObjectSuffix) -MF$(IntermediateDirectory)/rle.c$(DependSuffix) -MM rle.c
-
-$(IntermediateDirectory)/rle.c$(PreprocessSuffix): rle.c
-	$(CC) $(CFLAGS) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/rle.c$(PreprocessSuffix) rle.c
 
 
 -include $(IntermediateDirectory)/*$(DependSuffix)
