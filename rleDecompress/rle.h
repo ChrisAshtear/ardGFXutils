@@ -40,7 +40,7 @@ struct RLE_data;
 * Function prototypes
 *************************************************************************/
 
-int RLE_Uncompress( unsigned char *in, RLE_data *out,
+int RLE_Uncompress( vector<char> *in, RLE_data *out,
                      unsigned int insize );
 
 

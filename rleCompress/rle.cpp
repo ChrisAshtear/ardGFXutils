@@ -266,7 +266,7 @@ int RLE_Compress( unsigned char *in, unsigned char *out,
 *  insize  - Number of input bytes.
 *************************************************************************/
 
-int RLE_Uncompress( unsigned char *in, RLE_data *out,
+void RLE_Uncompress( unsigned char *in, unsigned char *out,
     unsigned int insize )
 {
     unsigned char marker, symbol;
@@ -275,21 +275,18 @@ int RLE_Uncompress( unsigned char *in, RLE_data *out,
     /* Do we have anything to uncompress? */
     if( insize < 1 )
     {
-        return 0;
+        return;
     }
 
     /* Get marker symbol from input stream */
     inpos = 0;
     marker = in[ inpos ++ ];
 
-	//cout <<"\nBeginning Decompression\n";
     /* Main decompression loop */
     outpos = 0;
-	int curPos = 0;
     do
     {
         symbol = in[ inpos ++ ];
-		//cout << "symbol: " << symbol;
         if( symbol == marker )
         {
             /* We had a marker byte */
@@ -298,6 +295,65 @@ int RLE_Uncompress( unsigned char *in, RLE_data *out,
             {
                 /* Counts 0, 1 and 2 are used for marker byte repetition
                    only */
+                for( i = 0; i <= count; ++ i )
+                {
+                    out[ outpos ++ ] = marker;
+                }
+            }
+            else
+            {
+                if( count & 0x80 )
+                {
+                    count = ((count & 0x7f) << 8) + in[ inpos ++ ];
+                }
+                symbol = in[ inpos ++ ];
+                for( i = 0; i <= count; ++ i )
+                {
+                    out[ outpos ++ ] = symbol;
+                }
+            }
+        }
+        else
+        {
+            /* No marker, plain copy */
+            out[ outpos ++ ] = symbol;
+        }
+    }
+    while( inpos < insize );
+}
+/*
+ * 
+int RLE_Uncompress( unsigned char *in, RLE_data *out,
+    unsigned int insize )
+{
+    unsigned char marker, symbol;
+    unsigned int  i, inpos, outpos, count;
+
+    // Do we have anything to uncompress? 
+    if( insize < 1 )
+    {
+        return 0;
+    }
+
+    // Get marker symbol from input stream 
+    inpos = 0;
+    marker = in[ inpos ++ ];
+
+	//cout <<"\nBeginning Decompression\n";
+    // Main decompression loop 
+    outpos = 0;
+	int curPos = 0;
+    do
+    {
+        symbol = in[ inpos ++ ];
+		//cout << "symbol: " << symbol;
+        if( symbol == marker )
+        {
+            // We had a marker byte 
+            count = in[ inpos ++ ];
+            if( count <= 2 )
+            {
+                 //Counts 0, 1 and 2 are used for marker byte repetition only 
 				curPos= outpos++;
 				out[ curPos ].colorIdx = marker;
 				out[ curPos ].rLength = count;
@@ -314,7 +370,7 @@ int RLE_Uncompress( unsigned char *in, RLE_data *out,
         }
         else
         {
-            /* No marker, plain copy */
+            //No marker, plain copy 
 			curPos = outpos++;
             out[ curPos ].colorIdx = symbol;
 			out[ curPos ].rLength = 1;
@@ -322,4 +378,4 @@ int RLE_Uncompress( unsigned char *in, RLE_data *out,
     }
     while( inpos < insize );
 	return outpos;
-}
+}*/

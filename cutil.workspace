@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <CodeLite_Workspace Name="cutil" Database="" Version="10.0.0">
-  <Project Name="rleCompress" Path="rleCompress/rleCompress.project" Active="No"/>
+  <Project Name="rleCompress" Path="rleCompress/rleCompress.project" Active="Yes"/>
   <Project Name="csvToBin" Path="csvToBin/csvToBin.project" Active="No"/>
-  <Project Name="rleDecompress" Path="rleDecompress/rleDecompress.project" Active="Yes"/>
+  <Project Name="rleDecompress" Path="rleDecompress/rleDecompress.project" Active="No"/>
   <BuildMatrix>
     <WorkspaceConfiguration Name="Debug" Selected="yes">
       <Environment/>

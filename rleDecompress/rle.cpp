@@ -19,7 +19,7 @@ int RLE_Uncompress( unsigned char *in, RLE_data *out,
     inpos = 0;
     marker = in[ inpos ++ ];
 
-	cout <<"\nBeginning Decompression\n";
+	//cout <<"\nBeginning Decompression\n";
     /* Main decompression loop */
     outpos = 0;
 	int curPos = 0;

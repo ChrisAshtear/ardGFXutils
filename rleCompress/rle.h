@@ -41,7 +41,7 @@ struct RLE_data;
 int RLE_Compress( unsigned char *in, unsigned char *out,
                   unsigned int insize );
 
-int RLE_Uncompress( unsigned char *in, RLE_data *out,
+int RLE_Uncompress( unsigned char *in, unsigned char *out,
                      unsigned int insize );
 
 #endif /* _rle_h_ */
