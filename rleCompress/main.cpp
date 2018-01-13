@@ -21,6 +21,54 @@ using namespace std;
 
 void exportCode(char **argv, unsigned char *outblock,int outsize, int imgData[3])
 {
+	ofstream outfile (argv[3], ios::out|ios::trunc);
+	if (outfile.is_open())
+	{
+		
+		//outfile.write((char*)outblock,outsize);
+		outfile << "uint8_t " << argv[2] << "height = " << imgData[0] << ";" <<endl;
+		outfile << "uint8_t " << argv[2] << "width = " << imgData[1] << ";" <<endl;
+		outfile << "uint8_t " << argv[2] << "numColors = " << imgData[2] << ";" <<endl;
+		outfile << "PROGMEM " ;
+		
+		//---raw RLE
+		outfile << argv[2] << "[" << outsize << "] = {";
+		outfile << (uint8_t)outblock[0]+ 0;
+		for(int i=1;i< outsize;i++)
+		{
+			outfile <<",";
+			outfile << (uint8_t)outblock[i] + 0 << "";
+		}
+		outfile << "};";
+	
+		outfile.close();
+		delete[] outblock;
+	}
+}
+
+int formatByte (uint8_t colorIdx, uint8_t rLength)
+{
+	int outByte;
+	if(rLength == 0)
+	{
+		outByte = colorIdx + 0;
+	}
+	else
+	{
+		outByte = colorIdx * 10;
+		//do this in RLE compression
+		/*if(outblock[i].rLength > 16)
+		{
+			outByte += 16;
+		}*/
+		outByte += rLength;
+	
+	}
+	return outByte;
+}
+
+void exportCode(char **argv, RLE_data *outblock,int outsize, int imgData[3])
+{
 	ofstream outfile (argv[2], ios::out|ios::trunc);
 	if (outfile.is_open())
 	{
@@ -32,25 +80,32 @@ void exportCode(char **argv, unsigned char *outblock,int outsize, int imgData[3]
 		outfile << "PROGMEM " ;
 		
 		outfile << argv[2] << "[" << outsize << "] = {";
-		outfile << (uint8_t)outblock[0]+ 0;
-		for(int i=1;i< outsize;i++)
+
+		for(int i=0;i< outsize;i++)
 		{
-			outfile <<",";
-			outfile << (uint8_t)outblock[i] + 0 << "";
+			int outByte = 0;
+			if(outblock[i].rLength == 0)
+			{
+				outByte = outblock[i].colorIdx + 0;
+			}
+			else
+			{
+				outByte = outblock[i].colorIdx * 10;
+				/*if(outblock[i].rLength > 16)
+				{
+					outByte += 16;
+				}*/
+				outByte += outblock[i].rLength;
+			}
+			outfile <<"," << (int)outByte + 0;
+			cout<< "," << formatByte(outblock[i].colorIdx,outblock[i].rLength);
 		}
 		outfile << "};";
-		/*outfile << argv[2] << "[" << outsize << "] = {{";
-		outfile << (uint8_t)outblock[0].colorIdx + 0<< ", " << outblock[0].rLength << "}";
-		for(int i=1;i< outsize;i++)
-		{
-			outfile <<",{";
-			outfile << (uint8_t)outblock[i].colorIdx + 0<< ", " << outblock[i].rLength << "}";
-		}
-		outfile << "};";*/
 		outfile.close();
 		delete[] outblock;
 	}
 }
+
 
 int main(int argc, char **argv)
 {
@@ -81,7 +136,7 @@ int main(int argc, char **argv)
 	cout << "\nthe entire file content is in memory\n";
 	cout << "size = " << size << "\n";
 	
-	int outBufferSize = (size * 1.04) + 1;
+	int outBufferSize = (size * 2) + 1;
 	
 	outblock = new unsigned char [outBufferSize];	
 	outsize = RLE_Compress( bitmap.bmp.data(), outblock, size);
@@ -105,7 +160,13 @@ int main(int argc, char **argv)
 	//int arrSize = RLE_Uncompress( outblock, out, outsize);
 	
 	
+	//exportCode(argv,outblock,outsize,imgData);
+	
+	RLE_data* outRLE = new RLE_data [outBufferSize];	
+	int arrSize = RLE_Uncompress( outblock, outRLE, outsize);
+	
 	exportCode(argv,outblock,outsize,imgData);
+	exportCode(argv,outRLE,arrSize,imgData);
 	
 	delete[] outblock;
 	

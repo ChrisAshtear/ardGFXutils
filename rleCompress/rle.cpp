@@ -67,6 +67,7 @@
 
 #include <stdio.h>
 #include "types.h"
+#include <iostream>
 /*************************************************************************
 *                           INTERNAL FUNCTIONS                           *
 *************************************************************************/
@@ -82,23 +83,7 @@ static void _RLE_WriteRep( unsigned char *out, unsigned int *outpos,
     unsigned int i, idx;
 
     idx = *outpos;
-    if( count <= 3 )
-    {
-        if( symbol == marker )
-        {
-            out[ idx ++ ] = marker;
-            out[ idx ++ ] = count-1;
-        }
-        else
-        {
-            for( i = 0; i < count; ++ i )
-            {
-                out[ idx ++ ] = symbol;
-            }
-        }
-    }
-    else
-    {
+
         out[ idx ++ ] = marker;
         -- count;
         if( count >= 128 )
@@ -107,7 +92,7 @@ static void _RLE_WriteRep( unsigned char *out, unsigned int *outpos,
         }
         out[ idx ++ ] = count & 0xff;
         out[ idx ++ ] = symbol;
-    }
+
     *outpos = idx;
 }
 
@@ -156,7 +141,7 @@ int RLE_Compress( unsigned char *in, unsigned char *out,
     unsigned int insize )
 {
     unsigned char byte1, byte2, marker;
-    unsigned int  inpos, outpos, count, i, histogram[ 1024 ];
+    unsigned int  inpos, outpos, count, i, histogram[ 256 ];
 
     /* Do we have anything to compress? */
     if( insize < 1 )
@@ -235,7 +220,7 @@ int RLE_Compress( unsigned char *in, unsigned char *out,
             else
             {
                 /* No, then don't handle the last byte */
-                _RLE_WriteNonRep( out, &outpos, marker, byte1 );
+                _RLE_WriteRep( out, &outpos, marker, byte1, 1 );
                 byte1 = byte2;
                 count = 1;
             }
@@ -251,7 +236,7 @@ int RLE_Compress( unsigned char *in, unsigned char *out,
     /* One byte left? */
     if( count == 1 )
     {
-        _RLE_WriteNonRep( out, &outpos, marker, byte1 );
+        _RLE_WriteRep( out, &outpos, marker, byte1, 1 );
     }
 
     return outpos;
@@ -266,63 +251,6 @@ int RLE_Compress( unsigned char *in, unsigned char *out,
 *  insize  - Number of input bytes.
 *************************************************************************/
 
-void RLE_Uncompress( unsigned char *in, unsigned char *out,
-    unsigned int insize )
-{
-    unsigned char marker, symbol;
-    unsigned int  i, inpos, outpos, count;
-
-    /* Do we have anything to uncompress? */
-    if( insize < 1 )
-    {
-        return;
-    }
-
-    /* Get marker symbol from input stream */
-    inpos = 0;
-    marker = in[ inpos ++ ];
-
-    /* Main decompression loop */
-    outpos = 0;
-    do
-    {
-        symbol = in[ inpos ++ ];
-        if( symbol == marker )
-        {
-            /* We had a marker byte */
-            count = in[ inpos ++ ];
-            if( count <= 2 )
-            {
-                /* Counts 0, 1 and 2 are used for marker byte repetition
-                   only */
-                for( i = 0; i <= count; ++ i )
-                {
-                    out[ outpos ++ ] = marker;
-                }
-            }
-            else
-            {
-                if( count & 0x80 )
-                {
-                    count = ((count & 0x7f) << 8) + in[ inpos ++ ];
-                }
-                symbol = in[ inpos ++ ];
-                for( i = 0; i <= count; ++ i )
-                {
-                    out[ outpos ++ ] = symbol;
-                }
-            }
-        }
-        else
-        {
-            /* No marker, plain copy */
-            out[ outpos ++ ] = symbol;
-        }
-    }
-    while( inpos < insize );
-}
-/*
- * 
 int RLE_Uncompress( unsigned char *in, RLE_data *out,
     unsigned int insize )
 {
@@ -341,41 +269,46 @@ int RLE_Uncompress( unsigned char *in, RLE_data *out,
 
 	//cout <<"\nBeginning Decompression\n";
     // Main decompression loop 
+	
+	
     outpos = 0;
 	int curPos = 0;
     do
     {
         symbol = in[ inpos ++ ];
-		//cout << "symbol: " << symbol;
+		//cout << "symbol: " << symbol+0;
         if( symbol == marker )
         {
             // We had a marker byte 
             count = in[ inpos ++ ];
-            if( count <= 2 )
-            {
-                 //Counts 0, 1 and 2 are used for marker byte repetition only 
-				curPos= outpos++;
-				out[ curPos ].colorIdx = marker;
-				out[ curPos ].rLength = count;
-            }
-            else
-            {
-                curPos = outpos++;
-				
-				symbol = in[inpos++];
-				//cout<< "repeating symbol:" << symbol;
+
+			curPos = outpos++;
+			
+			symbol = in[inpos++];
+			//cout<< "repeating symbol:" << symbol+0;
+			int rCount = count;
+			
+			//writing multiple values is to ensure our formatting is correct for the output.
+			// 59 would be color 5 repeating 9 times (draw color 5 10x)
+			while(rCount > 9)
+			{
 				out[ curPos ].colorIdx = symbol;
-				out[ curPos ].rLength = count;
-            }
+				out[ curPos ].rLength = 9;
+				curPos = outpos++;
+				rCount -=9;
+			}
+			out[ curPos ].colorIdx = symbol;
+			out[ curPos ].rLength = rCount;
+            
         }
         else
         {
             //No marker, plain copy 
 			curPos = outpos++;
             out[ curPos ].colorIdx = symbol;
-			out[ curPos ].rLength = 1;
+			out[ curPos ].rLength = 0;
         }
     }
     while( inpos < insize );
 	return outpos;
-}*/
+}

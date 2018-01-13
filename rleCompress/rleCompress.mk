@@ -6,14 +6,14 @@
 ProjectName            :=rleCompress
 ConfigurationName      :=Debug
 WorkspacePath          :=C:/Users/Tempest/Documents/cutil
-ProjectPath            :=C:/Users/Tempest/Documents/cutil/rleCompress
+ProjectPath            :=C:/Users/Tempest/Documents/cutil/rleCompress-straightRLE
 IntermediateDirectory  :=./Debug
 OutDir                 := $(IntermediateDirectory)
 CurrentFileName        :=
 CurrentFilePath        :=
 CurrentFileFullPath    :=
 User                   :=Tempest
-Date                   :=09/01/2018
+Date                   :=13/01/2018
 CodeLitePath           :="C:/Program Files/CodeLite"
 LinkerName             :=C:/TDM-GCC-64/bin/g++.exe
 SharedObjectLinkerName :=C:/TDM-GCC-64/bin/g++.exe -shared -fPIC
@@ -62,7 +62,7 @@ AS       := C:/TDM-GCC-64/bin/as.exe
 ## User defined environment variables
 ##
 CodeLiteDir:=C:\Program Files\CodeLite
-Objects0=$(IntermediateDirectory)/rle.cpp$(ObjectSuffix) $(IntermediateDirectory)/bmp.cpp$(ObjectSuffix) $(IntermediateDirectory)/main.cpp$(ObjectSuffix) 
+Objects0=$(IntermediateDirectory)/bmp.cpp$(ObjectSuffix) $(IntermediateDirectory)/rle.cpp$(ObjectSuffix) $(IntermediateDirectory)/main.cpp$(ObjectSuffix) 
 
 
 
@@ -93,24 +93,24 @@ PreBuild:
 ##
 ## Objects
 ##
-$(IntermediateDirectory)/rle.cpp$(ObjectSuffix): rle.cpp $(IntermediateDirectory)/rle.cpp$(DependSuffix)
-	$(CXX) $(IncludePCH) $(SourceSwitch) "C:/Users/Tempest/Documents/cutil/rleCompress/rle.cpp" $(CXXFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/rle.cpp$(ObjectSuffix) $(IncludePath)
-$(IntermediateDirectory)/rle.cpp$(DependSuffix): rle.cpp
-	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) -MG -MP -MT$(IntermediateDirectory)/rle.cpp$(ObjectSuffix) -MF$(IntermediateDirectory)/rle.cpp$(DependSuffix) -MM rle.cpp
-
-$(IntermediateDirectory)/rle.cpp$(PreprocessSuffix): rle.cpp
-	$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/rle.cpp$(PreprocessSuffix) rle.cpp
-
 $(IntermediateDirectory)/bmp.cpp$(ObjectSuffix): bmp.cpp $(IntermediateDirectory)/bmp.cpp$(DependSuffix)
-	$(CXX) $(IncludePCH) $(SourceSwitch) "C:/Users/Tempest/Documents/cutil/rleCompress/bmp.cpp" $(CXXFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/bmp.cpp$(ObjectSuffix) $(IncludePath)
+	$(CXX) $(IncludePCH) $(SourceSwitch) "C:/Users/Tempest/Documents/cutil/rleCompress-straightRLE/bmp.cpp" $(CXXFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/bmp.cpp$(ObjectSuffix) $(IncludePath)
 $(IntermediateDirectory)/bmp.cpp$(DependSuffix): bmp.cpp
 	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) -MG -MP -MT$(IntermediateDirectory)/bmp.cpp$(ObjectSuffix) -MF$(IntermediateDirectory)/bmp.cpp$(DependSuffix) -MM bmp.cpp
 
 $(IntermediateDirectory)/bmp.cpp$(PreprocessSuffix): bmp.cpp
 	$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/bmp.cpp$(PreprocessSuffix) bmp.cpp
 
+$(IntermediateDirectory)/rle.cpp$(ObjectSuffix): rle.cpp $(IntermediateDirectory)/rle.cpp$(DependSuffix)
+	$(CXX) $(IncludePCH) $(SourceSwitch) "C:/Users/Tempest/Documents/cutil/rleCompress-straightRLE/rle.cpp" $(CXXFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/rle.cpp$(ObjectSuffix) $(IncludePath)
+$(IntermediateDirectory)/rle.cpp$(DependSuffix): rle.cpp
+	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) -MG -MP -MT$(IntermediateDirectory)/rle.cpp$(ObjectSuffix) -MF$(IntermediateDirectory)/rle.cpp$(DependSuffix) -MM rle.cpp
+
+$(IntermediateDirectory)/rle.cpp$(PreprocessSuffix): rle.cpp
+	$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/rle.cpp$(PreprocessSuffix) rle.cpp
+
 $(IntermediateDirectory)/main.cpp$(ObjectSuffix): main.cpp $(IntermediateDirectory)/main.cpp$(DependSuffix)
-	$(CXX) $(IncludePCH) $(SourceSwitch) "C:/Users/Tempest/Documents/cutil/rleCompress/main.cpp" $(CXXFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/main.cpp$(ObjectSuffix) $(IncludePath)
+	$(CXX) $(IncludePCH) $(SourceSwitch) "C:/Users/Tempest/Documents/cutil/rleCompress-straightRLE/main.cpp" $(CXXFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/main.cpp$(ObjectSuffix) $(IncludePath)
 $(IntermediateDirectory)/main.cpp$(DependSuffix): main.cpp
 	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) -MG -MP -MT$(IntermediateDirectory)/main.cpp$(ObjectSuffix) -MF$(IntermediateDirectory)/main.cpp$(DependSuffix) -MM main.cpp
 
