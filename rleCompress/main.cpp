@@ -81,23 +81,10 @@ void exportCode(char **argv, RLE_data *outblock,int outsize, int imgData[3])
 		
 		outfile << argv[2] << "[" << outsize << "] = {";
 
-		for(int i=0;i< outsize;i++)
+		outfile << formatByte(outblock[0].colorIdx,outblock[0].rLength);
+		for(int i=1;i< outsize;i++)
 		{
-			int outByte = 0;
-			if(outblock[i].rLength == 0)
-			{
-				outByte = outblock[i].colorIdx + 0;
-			}
-			else
-			{
-				outByte = outblock[i].colorIdx * 10;
-				/*if(outblock[i].rLength > 16)
-				{
-					outByte += 16;
-				}*/
-				outByte += outblock[i].rLength;
-			}
-			outfile <<"," << (int)outByte + 0;
+			outfile <<"," << formatByte(outblock[i].colorIdx,outblock[i].rLength);
 			cout<< "," << formatByte(outblock[i].colorIdx,outblock[i].rLength);
 		}
 		outfile << "};";
