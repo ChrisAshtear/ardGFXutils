@@ -1,8 +1,8 @@
 .PHONY: clean All
 
 All:
-	@echo "----------Building project:[ rleCompress - Debug ]----------"
-	@cd "rleCompress" && "$(MAKE)" -f  "rleCompress.mk"
+	@echo "----------Building project:[ rleComp1 - Debug ]----------"
+	@cd "rleCompress" && "$(MAKE)" -f  "rleComp1.mk"
 clean:
-	@echo "----------Cleaning project:[ rleCompress - Debug ]----------"
-	@cd "rleCompress" && "$(MAKE)" -f  "rleCompress.mk" clean
+	@echo "----------Cleaning project:[ rleComp1 - Debug ]----------"
+	@cd "rleCompress" && "$(MAKE)" -f  "rleComp1.mk" clean
