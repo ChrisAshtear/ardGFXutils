@@ -17,6 +17,8 @@ string colorDepthError = "\nThis utiliy only support 8-bit BMP images. Image bit
 //colorIndex should be array index
 //[0]-{AddrStart/AddrEnd,AddrStart/AddrEnd
 
+
+
 using namespace std;
 
 void exportCode(char **argv, unsigned char *outblock,int outsize, int imgData[3])
@@ -37,7 +39,7 @@ void exportCode(char **argv, unsigned char *outblock,int outsize, int imgData[3]
 		for(int i=1;i< outsize;i++)
 		{
 			outfile <<",";
-			outfile << (uint8_t)outblock[i] + 0 << "";
+			outfile << (int) outblock[i] + 0<< "";
 		}
 		outfile << "};";
 	
@@ -46,16 +48,18 @@ void exportCode(char **argv, unsigned char *outblock,int outsize, int imgData[3]
 	}
 }
 
-int formatByte (uint8_t colorIdx, uint8_t rLength)
+string formatByte (uint8_t colorIdx, uint8_t rLength)
 {
 	int outByte;
+	//cout << "IDX:" << colorIdx + 0 << " LEN: " << rLength + 0 << endl;
 	if(rLength == 0)
 	{
 		outByte = colorIdx + 0;
+		//loByte = "0";//add trailing 0 to hex number to make sure it outputs correctly
 	}
 	else
 	{
-		outByte = colorIdx * 10;
+		outByte = colorIdx * 16;
 		//do this in RLE compression
 		/*if(outblock[i].rLength > 16)
 		{
@@ -64,7 +68,23 @@ int formatByte (uint8_t colorIdx, uint8_t rLength)
 		outByte += rLength;
 	
 	}
-	return outByte;
+	char hex[8];
+	itoa (outByte,hex,16);
+	string output = "0x";
+	if(colorIdx == 0)
+	{
+		output.append("0");
+	}
+	output.append(hex);
+	if(rLength == 0)
+	{
+		output.append("0");
+	}
+	if(rLength == 0 && colorIdx == 0)
+	{
+		output = "0x00";
+	}
+	return output;
 }
 
 void exportCode(char **argv, RLE_data *outblock,int outsize, int imgData[3])
