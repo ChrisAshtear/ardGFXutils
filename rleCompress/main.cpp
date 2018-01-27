@@ -7,12 +7,13 @@
 
 #include <vector>
 
-string usageMsg = "correct usage is rleCompress inBMP outFile";
+string usageMsg = "correct usage is rleCompress -switch inBMP outFile";
+string switchMsg = "use -T for tileset, -M for tilemap, and -S for sprite";
 string description = " is a utility to convert 8-bit BMP graphics to a usable (and compressed) format for use with Arduino.";
 string outputFormat = " \nIt outputs an array of array of RLE_data.\nThis is a struct composed of 2 uint8s. 1st is the Pal index of the color to draw, 2nd is the amount of times that color repeats.\n";
 string colorDepthError = "\nThis utiliy only support 8-bit BMP images. Image bit depth is: ";
 
-
+int fileType = -1;
 //need a better solution than the array, its bigger than original file many times.
 //colorIndex should be array index
 //[0]-{AddrStart/AddrEnd,AddrStart/AddrEnd
@@ -23,7 +24,7 @@ using namespace std;
 
 void exportCode(char **argv, unsigned char *outblock,int outsize, int imgData[3])
 {
-	ofstream outfile (argv[3], ios::out|ios::trunc);
+	ofstream outfile (argv[4], ios::out|ios::trunc);
 	if (outfile.is_open())
 	{
 		
@@ -35,8 +36,8 @@ void exportCode(char **argv, unsigned char *outblock,int outsize, int imgData[3]
 		
 		//---raw RLE
 		outfile << argv[2] << "[" << outsize << "] = {";
-		outfile << (uint8_t)outblock[0]+ 0;
-		for(int i=1;i< outsize;i++)
+		outfile << (uint8_t)outblock[outsize-1]+ 0;
+		for(int i=outsize-2;i>=0;i--)
 		{
 			outfile <<",";
 			outfile << (int) outblock[i] + 0<< "";
@@ -89,7 +90,7 @@ string formatByte (uint8_t colorIdx, uint8_t rLength)
 
 void exportCode(char **argv, RLE_data *outblock,int outsize, int imgData[3])
 {
-	ofstream outfile (argv[2], ios::out|ios::trunc);
+	ofstream outfile (argv[3], ios::out|ios::trunc);
 	if (outfile.is_open())
 	{
 		
@@ -99,18 +100,47 @@ void exportCode(char **argv, RLE_data *outblock,int outsize, int imgData[3])
 		outfile << "uint8_t " << argv[2] << "numColors = " << imgData[2] << ";" <<endl;
 		outfile << "PROGMEM " ;
 		
-		outfile << argv[2] << "[" << outsize << "] = {";
+		outfile << argv[3] << "[" << outsize << "] = {";
 
-		outfile << formatByte(outblock[0].colorIdx,outblock[0].rLength);
-		for(int i=1;i< outsize;i++)
+		outfile << formatByte(outblock[outsize-1].colorIdx,outblock[outsize-1].rLength);
+		
+		int height = imgData[0];
+		int width = imgData[1];
+		int tiles = height / width;
+		
+		int tileAddr[tiles];
+		
+		cout<< "tileLen:" << tiles;
+		
+		int pixCounter = 0;
+		int tCounter = 0;
+		for(int i=outsize-2;i>=0;i--)
 		{
 			outfile <<"," << formatByte(outblock[i].colorIdx,outblock[i].rLength);
 			cout<< "," << formatByte(outblock[i].colorIdx,outblock[i].rLength);
+			pixCounter +=outblock[i].rLength;
+			if(pixCounter >= width*width && fileType == 0)
+			{
+				tileAddr[tCounter] = i;
+				tCounter++;
+				pixCounter -= width*width;
+				cout<< "Addr:" << i;
+			}
 		}
 		outfile << "};";
+		if(fileType == 0)
+		{
+			outfile <<endl<< "ADDR[" << tiles << "] = {";
+			for(int i=0; i<tiles; i++)
+			{
+				outfile << ", " << tileAddr[i];
+			}
+			outfile << "};";
+		}
 		outfile.close();
 		delete[] outblock;
 	}
+	string test;
 }
 
 
@@ -121,17 +151,38 @@ int main(int argc, char **argv)
 	unsigned char * outblock;
 	int outsize = 0;
 	//argv 0-executable name, argv1 first arg, etc.
-	
+	argc = 3;
+	argv[1] = "-T";
+	argv[2] = "fsheet2.bmp";
+	argv[3] = "tf";
 	//support read-in of tilemap files.
+	char typeSwitch = argv[1][1];
+	cout << typeSwitch;
+	switch(typeSwitch)
+	{
+		case 'T'://TileSet
+		fileType = 0;
+		break;
+		
+		case 'S'://Sprite
+		fileType = 1;
+		break;
+		
+		case 'M'://TileMap
+		fileType = 2;
+		break;
+	};
 	
-	if(argc < 2)
+	if(argc < 3 || fileType == -1)
 	{
 		cout << endl << argv[0] << description <<endl <<endl;
-		cout << usageMsg <<endl << outputFormat;
+		cout << usageMsg <<endl << switchMsg << endl << outputFormat;
 		return 0;
 	}
+
 	
-	BMPobj bitmap = readBMP(argv[1]);
+	
+	BMPobj bitmap = readBMP(argv[2]);
 	
 	if(bitmap.bitDepth != 8)
 	{
@@ -172,7 +223,7 @@ int main(int argc, char **argv)
 	RLE_data* outRLE = new RLE_data [outBufferSize];	
 	int arrSize = RLE_Uncompress( outblock, outRLE, outsize);
 	
-	exportCode(argv,outblock,outsize,imgData);
+	//exportCode(argv,outblock,outsize,imgData);
 	exportCode(argv,outRLE,arrSize,imgData);
 	
 	delete[] outblock;

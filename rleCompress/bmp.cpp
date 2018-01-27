@@ -62,7 +62,7 @@ BMPobj readBMP(const string &file)
 
 	for(int i =0; i<numColors*4; i++)
 	{
-		//cout << (uint8_t)pal[i] << endl;
+		cout << (uint8_t)pal[i]+0 << endl;
 	}
     bmp.read((char*)img.data(), imgLength);
 	

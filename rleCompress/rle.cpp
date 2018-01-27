@@ -273,6 +273,7 @@ int RLE_Uncompress( unsigned char *in, RLE_data *out,
 	
     outpos = 0;
 	int curPos = 0;
+	int pixCount = 0;
     do
     {
         symbol = in[ inpos ++ ];
@@ -290,16 +291,33 @@ int RLE_Uncompress( unsigned char *in, RLE_data *out,
 			
 			//writing multiple values is to ensure our formatting is correct for the output.
 			// 59 would be color 5 repeating 9 times (draw color 5 10x)
-			while(rCount > 9)
+			if(pixCount + rCount >= 64)
 			{
 				out[ curPos ].colorIdx = symbol;
-				out[ curPos ].rLength = 9;
+				int remain = 64-pixCount;
+				out[ curPos ].rLength = remain;
 				curPos = outpos++;
-				rCount -=9;
+				int next = rCount - remain;
+				out[ curPos ].colorIdx = symbol;
+				out[ curPos ].rLength = next;
+				pixCount = next;
+				curPos = outpos++;
 			}
-			out[ curPos ].colorIdx = symbol;
-			out[ curPos ].rLength = rCount;
-            
+			//else{
+				
+				while(rCount > 14)
+				{
+					out[ curPos ].colorIdx = symbol;
+					out[ curPos ].rLength = 14;
+					curPos = outpos++;
+					rCount -=14;
+					pixCount += rCount + 1;
+				}
+				out[ curPos ].colorIdx = symbol;
+				out[ curPos ].rLength = rCount;
+				pixCount += rCount+1;
+				
+			//}
         }
         else
         {
@@ -307,6 +325,7 @@ int RLE_Uncompress( unsigned char *in, RLE_data *out,
 			curPos = outpos++;
             out[ curPos ].colorIdx = symbol;
 			out[ curPos ].rLength = 0;
+			pixCount += 1;
         }
     }
     while( inpos < insize );
