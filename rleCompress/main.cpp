@@ -114,8 +114,9 @@ void exportCode(char **argv, RLE_data *outblock,int outsize, int imgData[3])
 		cout<< "tileLen:" << tiles;
 		
 		int pixCounter = 0;
+		pixCounter +=outblock[outsize-1].rLength+1;
 		int tCounter = tiles-1;
-		for(int i=outsize-1;i>=0;i--)
+		for(int i=outsize-2;i>=0;i--)
 		{
 			outfile <<"," << formatByte(outblock[i].colorIdx,outblock[i].rLength);
 			cout<< "," << formatByte(outblock[i].colorIdx,outblock[i].rLength);
