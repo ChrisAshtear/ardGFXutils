@@ -115,7 +115,7 @@ void exportCode(char **argv, RLE_data *outblock,int outsize, int imgData[3])
 		
 		int pixCounter = 0;
 		pixCounter +=outblock[outsize-1].rLength+1;
-		int tCounter = tiles-1;
+		int tCounter = 0;
 		for(int i=outsize-2;i>=0;i--)
 		{
 			outfile <<"," << formatByte(outblock[i].colorIdx,outblock[i].rLength);
@@ -123,8 +123,8 @@ void exportCode(char **argv, RLE_data *outblock,int outsize, int imgData[3])
 			pixCounter +=outblock[i].rLength+1;
 			if(pixCounter >= width*width && fileType == 0)
 			{
-				tileAddr[tCounter] = i;
-				tCounter--;
+				tileAddr[tCounter] = outsize - i;
+				tCounter++;
 				pixCounter -= width*width;
 				cout<< "Addr:" << i;
 			}
@@ -134,7 +134,7 @@ void exportCode(char **argv, RLE_data *outblock,int outsize, int imgData[3])
 		{
 			outfile <<endl<< "ADDR[" << tiles << "] = {";
 			outfile <<"0";//first tile addr will always be 0
-			for(int i=1; i<tiles; i++)
+			for(int i=0; i<tiles-1; i++)
 			{
 				outfile << ", " << tileAddr[i];
 			}
