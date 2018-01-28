@@ -14,6 +14,7 @@ string outputFormat = " \nIt outputs an array of array of RLE_data.\nThis is a s
 string colorDepthError = "\nThis utiliy only support 8-bit BMP images. Image bit depth is: ";
 
 int fileType = -1;
+bool writeTileSet = false;
 //need a better solution than the array, its bigger than original file many times.
 //colorIndex should be array index
 //[0]-{AddrStart/AddrEnd,AddrStart/AddrEnd
@@ -95,9 +96,9 @@ void exportCode(char **argv, RLE_data *outblock,int outsize, int imgData[3])
 	{
 		
 		//outfile.write((char*)outblock,outsize);
-		outfile << "uint8_t " << argv[2] << "height = " << imgData[0] << ";" <<endl;
-		outfile << "uint8_t " << argv[2] << "width = " << imgData[1] << ";" <<endl;
-		outfile << "uint8_t " << argv[2] << "numColors = " << imgData[2] << ";" <<endl;
+		outfile << "uint8_t " << argv[3] << "_height = " << imgData[0] << ";" <<endl;
+		outfile << "uint8_t " << argv[3] << "_width = " << imgData[1] << ";" <<endl;
+		outfile << "uint8_t " << argv[3] << "_numColors = " << imgData[2] << ";" <<endl;
 		outfile << "PROGMEM " ;
 		
 		outfile << argv[3] << "[" << outsize << "] = {";
@@ -113,16 +114,16 @@ void exportCode(char **argv, RLE_data *outblock,int outsize, int imgData[3])
 		cout<< "tileLen:" << tiles;
 		
 		int pixCounter = 0;
-		int tCounter = 0;
-		for(int i=outsize-2;i>=0;i--)
+		int tCounter = tiles-1;
+		for(int i=outsize-1;i>=0;i--)
 		{
 			outfile <<"," << formatByte(outblock[i].colorIdx,outblock[i].rLength);
 			cout<< "," << formatByte(outblock[i].colorIdx,outblock[i].rLength);
-			pixCounter +=outblock[i].rLength;
+			pixCounter +=outblock[i].rLength+1;
 			if(pixCounter >= width*width && fileType == 0)
 			{
 				tileAddr[tCounter] = i;
-				tCounter++;
+				tCounter--;
 				pixCounter -= width*width;
 				cout<< "Addr:" << i;
 			}
@@ -131,7 +132,8 @@ void exportCode(char **argv, RLE_data *outblock,int outsize, int imgData[3])
 		if(fileType == 0)
 		{
 			outfile <<endl<< "ADDR[" << tiles << "] = {";
-			for(int i=0; i<tiles; i++)
+			outfile <<"0";//first tile addr will always be 0
+			for(int i=1; i<tiles; i++)
 			{
 				outfile << ", " << tileAddr[i];
 			}
@@ -151,10 +153,11 @@ int main(int argc, char **argv)
 	unsigned char * outblock;
 	int outsize = 0;
 	//argv 0-executable name, argv1 first arg, etc.
-	argc = 3;
+	/*argc = 3;
 	argv[1] = "-T";
 	argv[2] = "fsheet2.bmp";
-	argv[3] = "tf";
+	argv[3] = "ts";
+	argv[4] = "tfrle";*/
 	//support read-in of tilemap files.
 	char typeSwitch = argv[1][1];
 	cout << typeSwitch;
@@ -162,6 +165,7 @@ int main(int argc, char **argv)
 	{
 		case 'T'://TileSet
 		fileType = 0;
+		writeTileSet = true;
 		break;
 		
 		case 'S'://Sprite
@@ -221,7 +225,9 @@ int main(int argc, char **argv)
 	//exportCode(argv,outblock,outsize,imgData);
 	
 	RLE_data* outRLE = new RLE_data [outBufferSize];	
-	int arrSize = RLE_Uncompress( outblock, outRLE, outsize);
+	
+	
+	int arrSize = RLE_Uncompress( outblock, outRLE, outsize,writeTileSet);
 	
 	//exportCode(argv,outblock,outsize,imgData);
 	exportCode(argv,outRLE,arrSize,imgData);

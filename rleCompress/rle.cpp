@@ -252,7 +252,7 @@ int RLE_Compress( unsigned char *in, unsigned char *out,
 *************************************************************************/
 
 int RLE_Uncompress( unsigned char *in, RLE_data *out,
-    unsigned int insize )
+    unsigned int insize, bool tileSet )
 {
     unsigned char marker, symbol;
     unsigned int  i, inpos, outpos, count;
@@ -283,41 +283,40 @@ int RLE_Uncompress( unsigned char *in, RLE_data *out,
             // We had a marker byte 
             count = in[ inpos ++ ];
 
-			curPos = outpos++;
+			//curPos = outpos++;
 			
 			symbol = in[inpos++];
 			//cout<< "repeating symbol:" << symbol+0;
 			int rCount = count;
-			
+			int remainder = 0;
 			//writing multiple values is to ensure our formatting is correct for the output.
 			// 59 would be color 5 repeating 9 times (draw color 5 10x)
-			if(pixCount + rCount >= 64)
+			while(rCount >-1)
 			{
+				int lengthOut = rCount;
 				out[ curPos ].colorIdx = symbol;
-				int remain = 64-pixCount;
-				out[ curPos ].rLength = remain;
-				curPos = outpos++;
-				int next = rCount - remain;
-				out[ curPos ].colorIdx = symbol;
-				out[ curPos ].rLength = next;
-				pixCount = next;
-				curPos = outpos++;
-			}
-			//else{
 				
-				while(rCount > 14)
+				if(rCount > 15)
 				{
-					out[ curPos ].colorIdx = symbol;
-					out[ curPos ].rLength = 14;
-					curPos = outpos++;
-					rCount -=14;
-					pixCount += rCount + 1;
+					lengthOut = 15;
 				}
-				out[ curPos ].colorIdx = symbol;
-				out[ curPos ].rLength = rCount;
-				pixCount += rCount+1;
-				
-			//}
+				if(pixCount + lengthOut+1 >= 64 && tileSet)
+				{
+					
+					int remain = 64-pixCount;
+					if(remain < lengthOut)
+					{
+						lengthOut = remain-1;
+						//all the +1s/-1s are to adjust between pixelsWritten and rCount values(REPEAT count) where 0 would be 1 px drawn.
+					}
+					pixCount = -1-lengthOut;
+				}
+				out[ curPos ].rLength = lengthOut;
+				pixCount+=lengthOut+1;
+				rCount -= lengthOut+1;
+				outpos++;
+				curPos = outpos;
+			}
         }
         else
         {
@@ -326,6 +325,10 @@ int RLE_Uncompress( unsigned char *in, RLE_data *out,
             out[ curPos ].colorIdx = symbol;
 			out[ curPos ].rLength = 0;
 			pixCount += 1;
+			if(pixCount == 64)
+			{
+				pixCount = 0;
+			}
         }
     }
     while( inpos < insize );
