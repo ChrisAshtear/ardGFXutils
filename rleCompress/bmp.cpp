@@ -52,7 +52,6 @@ BMPobj readBMP(const string &file)
 	{
 		//grab palette colors.
 	}*/
-
     vector<unsigned char> img(width*height);
 	
 	int imgLength = width*height;
@@ -60,7 +59,7 @@ BMPobj readBMP(const string &file)
 	char * pal = new char[numColors*4];
 	bmp.read(pal,numColors*4);
 
-	for(int i =0; i<numColors*4; i++)
+	for(int i =0; i<numColors*4; i+=4)
 	{
 		cout << (uint8_t)pal[i]+0 << endl;
 	}
@@ -76,6 +75,6 @@ BMPobj readBMP(const string &file)
 		
 	}*/
 	returnObj.bmp = img;
-
+	returnObj.pal = pal;
     return returnObj;
 }

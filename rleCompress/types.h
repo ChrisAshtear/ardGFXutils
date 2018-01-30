@@ -16,7 +16,8 @@ typedef struct BMPobj
 	int numColors;
 	int imgWidth;
 	int imgHeight;
-	int bitDepth;
+	int bitDepth; 
+	char* pal;
 };
 
 #endif

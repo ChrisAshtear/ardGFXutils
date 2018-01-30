@@ -4,7 +4,7 @@
 #include <fstream>
 #include "bmp.h"
 #include "types.h"
-
+#include <sstream>
 #include <vector>
 
 string usageMsg = "correct usage is rleCompress -switch inBMP outFile";
@@ -15,6 +15,8 @@ string colorDepthError = "\nThis utiliy only support 8-bit BMP images. Image bit
 
 int fileType = -1;
 bool writeTileSet = false;
+
+uint16_t convertToRGB565(int pal[3]);
 //need a better solution than the array, its bigger than original file many times.
 //colorIndex should be array index
 //[0]-{AddrStart/AddrEnd,AddrStart/AddrEnd
@@ -22,6 +24,64 @@ bool writeTileSet = false;
 
 
 using namespace std;
+
+string writeBMPdata(string name, BMPobj bmp)
+{
+	//write BMP header info to output file
+	stringstream out;
+	string output;
+	
+	stringstream pal_l;
+	stringstream pal_h;
+	stringstream pal16;
+	
+	out << "uint8_t " << name << "_height = " << bmp.imgHeight << ";" <<endl;
+	out << "uint8_t " << name << "_width = " << bmp.imgWidth << ";" <<endl;
+	out << "uint8_t " << name << "_numColors = " << bmp.numColors << ";" <<endl;
+	
+	
+	uint8_t color_hi;
+	uint8_t color_lo;
+	
+	
+	pal_l << "uint8_t " << name << "_palLo[" << bmp.numColors << "] = {";
+	pal_h << "uint8_t " << name << "_palHi[" << bmp.numColors << "] = {";
+	pal16 << "uint16_t " << name << "_pal[" << bmp.numColors << "] = {";
+	
+	for(int i = 0; i<bmp.numColors*4;i+=4)
+	{
+		int rgb888[3] = {bmp.pal[i+2],bmp.pal[i+1],bmp.pal[i]};
+		uint16_t color = convertToRGB565(rgb888);
+		
+		color_hi = color >> 8;
+		color_lo = color;
+		
+		pal16 << "," << color;
+		pal_l << "," << color_lo+0;
+		pal_h << "," << color_hi+0;
+	}
+	
+	pal_l << "};";
+	pal_h << "};";
+	pal16 << "};";
+	//out << endl << pal_l.str() << endl << pal_h.str() << endl;
+	out << endl << pal16.str() << endl;
+	output = out.str();
+	return output;
+}
+
+uint16_t convertToRGB565(int pal[3])
+{
+    uint8_t red   = pal[0];
+    uint8_t green = pal[1];
+    uint8_t blue  = pal[2];
+
+    uint16_t b = (blue >> 3) & 0x1f;
+    uint16_t g = ((green >> 2) & 0x3f) << 5;
+    uint16_t r = ((red >> 3) & 0x1f) << 11;
+
+    return (uint16_t) (r | g | b);
+}
 
 void exportCode(char **argv, unsigned char *outblock,int outsize, int imgData[3])
 {
@@ -89,24 +149,23 @@ string formatByte (uint8_t colorIdx, uint8_t rLength)
 	return output;
 }
 
-void exportCode(char **argv, RLE_data *outblock,int outsize, int imgData[3])
+void exportCode(char **argv, RLE_data *outblock,int outsize, BMPobj bmp)
 {
 	ofstream outfile (argv[3], ios::out|ios::trunc);
 	if (outfile.is_open())
 	{
 		
 		//outfile.write((char*)outblock,outsize);
-		outfile << "uint8_t " << argv[3] << "_height = " << imgData[0] << ";" <<endl;
-		outfile << "uint8_t " << argv[3] << "_width = " << imgData[1] << ";" <<endl;
-		outfile << "uint8_t " << argv[3] << "_numColors = " << imgData[2] << ";" <<endl;
+		string header = writeBMPdata(argv[3],bmp);
+		outfile << header;
 		outfile << "PROGMEM " ;
 		
 		outfile << argv[3] << "[" << outsize << "] = {";
 
 		outfile << formatByte(outblock[outsize-1].colorIdx,outblock[outsize-1].rLength);
 		
-		int height = imgData[0];
-		int width = imgData[1];
+		int height = bmp.imgHeight;
+		int width = bmp.imgWidth;
 		int tiles = height / width;
 		
 		int tileAddr[tiles];
@@ -211,10 +270,6 @@ int main(int argc, char **argv)
 	
 	cout << "\nbeginning conversion to array\n";
 	
-	
-	int imgData[3] = {bitmap.imgHeight , bitmap.imgWidth , bitmap.numColors};
-	
-	
 	//GENERATE RLE SHAPES to draw. need some kind of routine to find least amount of rects per
 	//image, with different tolerances for including whitespace
 	
@@ -231,7 +286,7 @@ int main(int argc, char **argv)
 	int arrSize = RLE_Uncompress( outblock, outRLE, outsize,writeTileSet);
 	
 	//exportCode(argv,outblock,outsize,imgData);
-	exportCode(argv,outRLE,arrSize,imgData);
+	exportCode(argv,outRLE,arrSize,bitmap);
 	
 	delete[] outblock;
 	
