@@ -8,6 +8,12 @@
   <Description/>
   <Dependencies/>
   <VirtualDirectory Name="src">
+    <File Name="tinyxml2.h"/>
+    <File Name="tinyxml2.cpp"/>
+    <File Name="tmxparser.h"/>
+    <File Name="tmxparser.cpp"/>
+    <File Name="base64.h"/>
+    <File Name="base64.cpp"/>
     <File Name="rle.cpp"/>
     <File Name="types.h"/>
     <File Name="bmp.h"/>

@@ -31,21 +31,15 @@ string writeBMPdata(string name, BMPobj bmp)
 	stringstream out;
 	string output;
 	
-	stringstream pal_l;
-	stringstream pal_h;
 	stringstream pal16;
 	
 	out << "uint8_t " << name << "_height = " << bmp.imgHeight << ";" <<endl;
 	out << "uint8_t " << name << "_width = " << bmp.imgWidth << ";" <<endl;
 	out << "uint8_t " << name << "_numColors = " << bmp.numColors << ";" <<endl;
 	
-	
 	uint8_t color_hi;
 	uint8_t color_lo;
-	
-	
-	pal_l << "uint8_t " << name << "_palLo[" << bmp.numColors << "] = {";
-	pal_h << "uint8_t " << name << "_palHi[" << bmp.numColors << "] = {";
+
 	pal16 << "uint16_t " << name << "_pal[" << bmp.numColors << "] = {";
 	
 	for(int i = 0; i<bmp.numColors*4;i+=4)
@@ -56,13 +50,9 @@ string writeBMPdata(string name, BMPobj bmp)
 		color_hi = color >> 8;
 		color_lo = color;
 		
-		pal16 << "," << color;
-		pal_l << "," << color_lo+0;
-		pal_h << "," << color_hi+0;
+		pal16 << "," <<hex<< color;
 	}
 	
-	pal_l << "};";
-	pal_h << "};";
 	pal16 << "};";
 	//out << endl << pal_l.str() << endl << pal_h.str() << endl;
 	out << endl << pal16.str() << endl;
