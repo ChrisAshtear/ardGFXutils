@@ -6,6 +6,14 @@
 #include "types.h"
 #include <sstream>
 #include <vector>
+#include "tmxparser.h"
+
+#define DEPTH_SCALE 5
+
+
+#define printf_depth( depth, format, ... ) \
+	printf("%*s " format "\n", ((depth)*DEPTH_SCALE), "", __VA_ARGS__)
+
 
 string usageMsg = "correct usage is rleCompress -switch inBMP outFile";
 string switchMsg = "use -T for tileset, -M for tilemap, and -S for sprite";
@@ -24,6 +32,56 @@ uint16_t convertToRGB565(int pal[3]);
 
 
 using namespace std;
+
+void printTmxMapData(const tmxparser::TmxMap* map)
+{
+	int depth = 0;
+	
+	printf_depth(0, "%s", "<map>");
+	depth = 1;
+	printf_depth(depth, "Version: %s", map->version.c_str());
+	printf_depth(depth, "Orientation: %d", map->orientation);
+	printf_depth(depth, "Width: %u", map->width);
+	printf_depth(depth, "Height: %u", map->height);
+	printf_depth(depth, "TileWidth: %u", map->tileWidth);
+	printf_depth(depth, "TileHeight: %u", map->tileHeight);
+	printf_depth(depth, "BackgroundColor: %s", map->backgroundColor.c_str());
+	/*printProperties(depth+1, map->propertyMap);
+	printTilesets(depth+1, map->tilesetCollection);
+	printLayers(depth+1, map->layerCollection);
+	printObjectGroups(depth+1, map->objectGroupCollection);*/
+}
+
+tmxparser::TmxMap readTMX(string filename)
+{
+	printf("tmxparser::main()\n");
+
+	tmxparser::TmxReturn error;
+	tmxparser::TmxMap map;
+
+	// test from file
+	error = tmxparser::parseFromFile(filename, &map, "");
+	cout << "test";
+	if (!error)
+	{
+		printTmxMapData(&map);
+
+		tmxparser::TmxRect rect;
+		rect.u = 0; rect.v = 0; rect.u2 = 0; rect.v2 = 0;
+		for (auto it : map.layerCollection[0].tiles)
+		{
+			tmxparser::calculateTileCoordinatesUV(map.tilesetCollection[it.tilesetIndex], it.tileFlatIndex, 0.5f, true, rect);
+			printf("Tileset[%u]@Tile[%u]=Rect( (%f, %f)->(%f, %f) )\n", it.tilesetIndex, it.tileFlatIndex, rect.u, rect.v, rect.u2, rect.v2);
+		}
+		
+	}
+	else
+	{
+		printf("error parsing file");
+	}
+
+	return map;
+}
 
 string writeBMPdata(string name, BMPobj bmp)
 {
@@ -203,11 +261,11 @@ int main(int argc, char **argv)
 	unsigned char * outblock;
 	int outsize = 0;
 	//argv 0-executable name, argv1 first arg, etc.
-	/*argc = 3;
-	argv[1] = "-T";
-	argv[2] = "fsheet2.bmp";
+	argc = 3;
+	argv[1] = "-M";
+	argv[2] = "element0.tmx";
 	argv[3] = "ts";
-	argv[4] = "tfrle";*/
+	argv[4] = "tfrle";
 	//support read-in of tilemap files.
 	char typeSwitch = argv[1][1];
 	cout << typeSwitch;
@@ -233,52 +291,62 @@ int main(int argc, char **argv)
 		cout << usageMsg <<endl << switchMsg << endl << outputFormat;
 		return 0;
 	}
-
 	
+	BMPobj bitmap;
+	tmxparser::TmxMap tileMap;
 	
-	BMPobj bitmap = readBMP(argv[2]);
-	
-	if(bitmap.bitDepth != 8)
+	if(fileType !=2)
 	{
-		cout << colorDepthError << bitmap.bitDepth <<endl;
-		return 0;
+	
+		bitmap = readBMP(argv[2]);
+		
+		if(bitmap.bitDepth != 8)
+		{
+			cout << colorDepthError << bitmap.bitDepth <<endl;
+			return 0;
+		}
+		
+		size = bitmap.bmp.size();
+		cout << "\nthe entire file content is in memory\n";
+		cout << "size = " << size << "\n";
+	
+		int outBufferSize = (size * 2) + 1;
+		
+		outblock = new unsigned char [outBufferSize];	
+		outsize = RLE_Compress( bitmap.bmp.data(), outblock, size);
+		
+		cout << "\n\nfinished compression\n";
+		cout << "new size = " << outsize << "\n";
+		
+		//delete[] memblock;
+		
+		cout << "\nbeginning conversion to array\n";
+		
+		//GENERATE RLE SHAPES to draw. need some kind of routine to find least amount of rects per
+		//image, with different tolerances for including whitespace
+		
+		//RLE_data* outRLE = new RLE_data [outBufferSize];	
+		unsigned char* out = new unsigned char[outBufferSize];
+		//int arrSize = RLE_Uncompress( outblock, out, outsize);
+		
+		
+		//exportCode(argv,outblock,outsize,imgData);
+		
+		RLE_data* outRLE = new RLE_data [outBufferSize];	
+		
+		
+		int arrSize = RLE_Uncompress( outblock, outRLE, outsize,writeTileSet);
+		
+		//exportCode(argv,outblock,outsize,imgData);
+		exportCode(argv,outRLE,arrSize,bitmap);
+		
+		delete[] outblock;
+	}
+	else
+	{
+		tileMap = readTMX((string)argv[2]);
 	}
 	
-	size = bitmap.bmp.size();
-	cout << "\nthe entire file content is in memory\n";
-	cout << "size = " << size << "\n";
-	
-	int outBufferSize = (size * 2) + 1;
-	
-	outblock = new unsigned char [outBufferSize];	
-	outsize = RLE_Compress( bitmap.bmp.data(), outblock, size);
-	
-	cout << "\n\nfinished compression\n";
-	cout << "new size = " << outsize << "\n";
-	
-	//delete[] memblock;
-	
-	cout << "\nbeginning conversion to array\n";
-	
-	//GENERATE RLE SHAPES to draw. need some kind of routine to find least amount of rects per
-	//image, with different tolerances for including whitespace
-	
-	//RLE_data* outRLE = new RLE_data [outBufferSize];	
-	unsigned char* out = new unsigned char[outBufferSize];
-	//int arrSize = RLE_Uncompress( outblock, out, outsize);
-	
-	
-	//exportCode(argv,outblock,outsize,imgData);
-	
-	RLE_data* outRLE = new RLE_data [outBufferSize];	
-	
-	
-	int arrSize = RLE_Uncompress( outblock, outRLE, outsize,writeTileSet);
-	
-	//exportCode(argv,outblock,outsize,imgData);
-	exportCode(argv,outRLE,arrSize,bitmap);
-	
-	delete[] outblock;
 	
   return 0;
 }
