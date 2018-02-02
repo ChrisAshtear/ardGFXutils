@@ -252,7 +252,7 @@ int RLE_Compress( unsigned char *in, unsigned char *out,
 *************************************************************************/
 
 int RLE_Uncompress( unsigned char *in, RLE_data *out,
-    unsigned int insize, bool tileSet )
+    unsigned int insize, int fileType )
 {
     unsigned char marker, symbol;
     unsigned int  i, inpos, outpos, count;
@@ -296,11 +296,11 @@ int RLE_Uncompress( unsigned char *in, RLE_data *out,
 				int lengthOut = rCount;
 				out[ curPos ].colorIdx = symbol;
 				
-				if(rCount > 15)
+				if(rCount > 15 && fileType != 2) // dont limit length for tileMaps
 				{
 					lengthOut = 15;
 				}
-				if(pixCount + lengthOut+1 >= 64 && tileSet)
+				if(pixCount + lengthOut+1 >= 64 && fileType == 1)//tileset
 				{
 					
 					int remain = 64-pixCount;

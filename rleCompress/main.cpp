@@ -118,6 +118,41 @@ string writeBMPdata(string name, BMPobj bmp)
 	return output;
 }
 
+string writeTMXdata(string name, tmxparser::TmxMap tileMap)
+{
+	//write BMP header info to output file
+	stringstream out;
+	string output;
+	
+	stringstream pal16;
+	
+	out << "uint8_t " << name << "_height = " << tileMap.height << ";" <<endl;
+	out << "uint8_t " << name << "_width = " << tileMap.width << ";" <<endl;
+	//out << "uint8_t " << name << "_numColors = " << bmp.numColors << ";" <<endl;
+	
+	/*uint8_t color_hi;
+	uint8_t color_lo;
+
+	pal16 << "uint16_t " << name << "_pal[" << bmp.numColors << "] = {";
+	
+	for(int i = 0; i<bmp.numColors*4;i+=4)
+	{
+		int rgb888[3] = {bmp.pal[i+2],bmp.pal[i+1],bmp.pal[i]};
+		uint16_t color = convertToRGB565(rgb888);
+		
+		color_hi = color >> 8;
+		color_lo = color;
+		
+		pal16 << "," <<hex<< color;
+	}
+	
+	pal16 << "};";
+	//out << endl << pal_l.str() << endl << pal_h.str() << endl;
+	out << endl << pal16.str() << endl;*/
+	output = out.str();
+	return output;
+}
+
 uint16_t convertToRGB565(int pal[3])
 {
     uint8_t red   = pal[0];
@@ -161,7 +196,21 @@ void exportCode(char **argv, unsigned char *outblock,int outsize, int imgData[3]
 string formatByte (uint8_t colorIdx, uint8_t rLength)
 {
 	int outByte;
+	string output = "0x";
+	char hex[8];
 	//cout << "IDX:" << colorIdx + 0 << " LEN: " << rLength + 0 << endl;
+	if(fileType == 2)
+	{
+		itoa (colorIdx,hex,16);
+		output.append(hex);
+		if(rLength > 0)
+		{
+			output += ",0x";
+			itoa (rLength,hex,16);
+			output.append(hex);
+		}
+		return output;
+	}
 	if(rLength == 0)
 	{
 		outByte = colorIdx + 0;
@@ -170,17 +219,12 @@ string formatByte (uint8_t colorIdx, uint8_t rLength)
 	else
 	{
 		outByte = colorIdx * 16;
-		//do this in RLE compression
-		/*if(outblock[i].rLength > 16)
-		{
-			outByte += 16;
-		}*/
 		outByte += rLength;
-	
 	}
-	char hex[8];
+	
+	
 	itoa (outByte,hex,16);
-	string output = "0x";
+	
 	if(colorIdx == 0)
 	{
 		output.append("0");
@@ -253,6 +297,45 @@ void exportCode(char **argv, RLE_data *outblock,int outsize, BMPobj bmp)
 	string test;
 }
 
+void exportTMXcode(char **argv, RLE_data *outblock,int outsize, tmxparser::TmxMap tileMap)
+{
+	ofstream outfile (argv[3], ios::out|ios::trunc);
+	if (outfile.is_open())
+	{
+		
+		//outfile.write((char*)outblock,outsize);
+		string header = writeTMXdata(argv[3],tileMap);
+		outfile << header;
+		outfile << "PROGMEM " ;
+		
+		outfile << argv[3] << "[" << outsize << "] = {";
+
+		outfile << formatByte(outblock[0].colorIdx,outblock[0].rLength);
+		
+		int height = tileMap.height;
+		int width = tileMap.width;
+		int tiles = height / width;
+		
+		int tileAddr[tiles];
+		
+		cout<< "tileLen:" << tiles;
+		
+		int pixCounter = 0;
+		pixCounter +=outblock[outsize-1].rLength+1;
+		int tCounter = 0;
+		for(int i=1;i<=outsize-1;i++)
+		{
+			outfile <<"," << formatByte(outblock[i].colorIdx,outblock[i].rLength);
+			cout<< "," << formatByte(outblock[i].colorIdx,outblock[i].rLength);
+			pixCounter +=outblock[i].rLength+1;
+		}
+		outfile << "};";
+		outfile.close();
+		delete[] outblock;
+	}
+	string test;
+}
+
 
 int main(int argc, char **argv)
 {
@@ -261,11 +344,11 @@ int main(int argc, char **argv)
 	unsigned char * outblock;
 	int outsize = 0;
 	//argv 0-executable name, argv1 first arg, etc.
-	argc = 3;
+	/*argc = 3;
 	argv[1] = "-M";
 	argv[2] = "element0.tmx";
 	argv[3] = "ts";
-	argv[4] = "tfrle";
+	argv[4] = "tfrle";*/
 	//support read-in of tilemap files.
 	char typeSwitch = argv[1][1];
 	cout << typeSwitch;
@@ -335,7 +418,7 @@ int main(int argc, char **argv)
 		RLE_data* outRLE = new RLE_data [outBufferSize];	
 		
 		
-		int arrSize = RLE_Uncompress( outblock, outRLE, outsize,writeTileSet);
+		int arrSize = RLE_Uncompress( outblock, outRLE, outsize,fileType);
 		
 		//exportCode(argv,outblock,outsize,imgData);
 		exportCode(argv,outRLE,arrSize,bitmap);
@@ -345,6 +428,25 @@ int main(int argc, char **argv)
 	else
 	{
 		tileMap = readTMX((string)argv[2]);
+		int size = tileMap.width * tileMap.height;
+		uint8_t map[size];
+		for(int i = 0; i< size; i++)
+		{
+			map[i] = tileMap.layerCollection[0].tiles[i].tileFlatIndex;
+		}
+		int outBufferSize = (size * 2) + 1;
+		outblock = new unsigned char [outBufferSize];	
+		outsize = RLE_Compress( map, outblock, size);
+		unsigned char* out = new unsigned char[outBufferSize];
+		RLE_data* outRLE = new RLE_data [outBufferSize];	
+		
+		
+		int arrSize = RLE_Uncompress( outblock, outRLE, outsize,writeTileSet);
+		exportTMXcode(argv,outRLE,arrSize,tileMap);
+		//convert to array
+		//run through RLE - what format?
+		//makeexport code
+		//then we need a master TMX file that contains the elements and element props.
 	}
 	
 	

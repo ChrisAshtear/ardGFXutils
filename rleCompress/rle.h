@@ -42,6 +42,6 @@ int RLE_Compress( unsigned char *in, unsigned char *out,
                   unsigned int insize );
 
 int RLE_Uncompress( unsigned char *in, RLE_data *out,
-                     unsigned int insize , bool tileSet);
+                     unsigned int insize , int fileType);
 
 #endif /* _rle_h_ */

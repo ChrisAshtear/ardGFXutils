@@ -4,6 +4,7 @@
   <Project Name="csvToBin" Path="csvToBin/csvToBin.project" Active="No"/>
   <Project Name="rleDecompress" Path="rleDecompress/rleDecompress.project" Active="No"/>
   <Project Name="bitshiftTest" Path="bitshiftTest/bitshiftTest.project" Active="No"/>
+  <Project Name="lzss1" Path="lzss1/lzss1.project" Active="No"/>
   <BuildMatrix>
     <WorkspaceConfiguration Name="Debug" Selected="yes">
       <Environment/>
@@ -11,6 +12,7 @@
       <Project Name="csvToBin" ConfigName="Debug"/>
       <Project Name="rleDecompress" ConfigName="Debug"/>
       <Project Name="bitshiftTest" ConfigName="Debug"/>
+      <Project Name="lzss1" ConfigName="Debug"/>
     </WorkspaceConfiguration>
     <WorkspaceConfiguration Name="Release" Selected="yes">
       <Environment/>
@@ -18,6 +20,7 @@
       <Project Name="csvToBin" ConfigName="Release"/>
       <Project Name="rleDecompress" ConfigName="Release"/>
       <Project Name="bitshiftTest" ConfigName="Release"/>
+      <Project Name="lzss1" ConfigName="Release"/>
     </WorkspaceConfiguration>
   </BuildMatrix>
 </CodeLite_Workspace>
